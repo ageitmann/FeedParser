@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 simutron IT-Service. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 //! Project version number for FeedParser.
 FOUNDATION_EXPORT double FeedParserVersionNumber;
