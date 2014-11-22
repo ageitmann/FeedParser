@@ -141,10 +141,10 @@ public class FeedParser: NSObject, NSXMLParserDelegate {
                 case "updated":
                     switch self.parseMode {
                     case ParseMode.FEED:
-                        self.newsFeed.lastUpdated = self.parseRFC3339DateFromString(self.currentContent)!
+                        self.newsFeed.lastUpdated = self.parseRFC3339DateFromString(self.currentContent)
                         break
                     case ParseMode.ENTRY:
-                        self.tmpEntry.lastUpdated = self.parseRFC3339DateFromString(self.currentContent)!
+                        self.tmpEntry.lastUpdated = self.parseRFC3339DateFromString(self.currentContent)
                         break
                     case ParseMode.IMAGE:
                         break
@@ -248,10 +248,10 @@ public class FeedParser: NSObject, NSXMLParserDelegate {
             case "pubDate":
                 switch self.parseMode {
                 case ParseMode.FEED:
-                    self.newsFeed.lastUpdated = self.parseRFC822DateFromString(self.currentContent)!
+                    self.newsFeed.lastUpdated = self.parseRFC822DateFromString(self.currentContent)
                     break
                 case ParseMode.ENTRY:
-                    self.tmpEntry.lastUpdated = self.parseRFC822DateFromString(self.currentContent)!
+                    self.tmpEntry.lastUpdated = self.parseRFC822DateFromString(self.currentContent)
                     break
                 case ParseMode.IMAGE:
                     break
@@ -311,7 +311,7 @@ public class FeedParser: NSObject, NSXMLParserDelegate {
     }
     
     // MARK: - Private Functions
-    private func parseRFC3339DateFromString(string:String) -> NSDate? {
+    private func parseRFC3339DateFromString(string:String) -> NSDate {
         let enUSPOSIXLocale = NSLocale(localeIdentifier: "en_US_POSIX")
         
         let rfc3339DateFormatter = NSDateFormatter()
@@ -319,13 +319,25 @@ public class FeedParser: NSObject, NSXMLParserDelegate {
         rfc3339DateFormatter.dateFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'"
         rfc3339DateFormatter.timeZone = NSTimeZone(forSecondsFromGMT: 0)
         
-        return rfc3339DateFormatter.dateFromString(string)
+        let date:NSDate? = rfc3339DateFormatter.dateFromString(string)
+        if let isDate = date {
+            return isDate
+        }
+        
+        return NSDate()
+    
     }
     
-    private func parseRFC822DateFromString(string:String) -> NSDate? {
+    private func parseRFC822DateFromString(string:String) -> NSDate {
         var dateFormat = NSDateFormatter()
         dateFormat.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
-        return dateFormat.dateFromString(string)
+        let date:NSDate? = dateFormat.dateFromString(string)
+
+        if let isDate = date {
+            return isDate
+        }
+        
+        return NSDate()
     }
 
 

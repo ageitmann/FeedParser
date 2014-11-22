@@ -6,8 +6,15 @@
 //  Copyright (c) 2014 simutron IT-Service. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import "TargetConditionals.h"
 
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+// iOS code here
+    #import <UIKit/UIKit.h>
+#else
+// OS X code here
+    #import <Cocoa/Cocoa.h>
+#endif
 //! Project version number for FeedParser.
 FOUNDATION_EXPORT double FeedParserVersionNumber;
 
