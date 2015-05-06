@@ -67,7 +67,7 @@ public class FeedParser: NSObject, NSXMLParserDelegate {
     }
     
     // MARK: - NSXMLParserDelegate 
-    func parser(parser: NSXMLParser!, didStartElement elementName: String!, namespaceURI: String!, qualifiedName qName: String!, attributes attributeDict: NSDictionary!) {
+    public func parser(parser: NSXMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [NSObject : AnyObject]) {
         
         self.currentContent = ""
         
@@ -80,20 +80,32 @@ public class FeedParser: NSObject, NSXMLParserDelegate {
             case "link":
                 switch self.parseMode {
                 case ParseMode.FEED:
-                    self.newsFeed.link = attributeDict.valueForKey("href") as String
+                    self.newsFeed.link = attributeDict["href"] as! String
                     break
                 case ParseMode.ENTRY:
-                    self.tmpEntry.link = attributeDict.valueForKey("href") as String
+                    self.tmpEntry.link = attributeDict["href"] as! String
                     break
                 case ParseMode.IMAGE:
                     break
+                }
+            case "enclosure", "media:content":
+                switch self.parseMode {
+                case ParseMode.FEED:
+                    break
+                case ParseMode.ENTRY:
+                    break
+                case ParseMode.IMAGE:
+                    self.lastParseMode = self.parseMode
+                    self.parseMode = ParseMode.IMAGE
+                    self.tmpImage = NewsImage()
+                    self.tmpImage?.url = attributeDict["url"] as! String
                 }
             case "title", "updated", "id", "summary", "content", "author", "name":
                 // Element is not needed for parsing
                 break
             default:
-                println("Element's name is \(elementName)")
-                println("Element's attributes are \(attributeDict)")
+                println("ATOM Element's name is \(elementName)")
+                println("ATOM Element's attributes are \(attributeDict)")
             }
         case FeedType.RSS:
             switch elementName {
@@ -104,6 +116,11 @@ public class FeedParser: NSObject, NSXMLParserDelegate {
                 self.lastParseMode = self.parseMode
                 self.parseMode = ParseMode.IMAGE
                 self.tmpImage = NewsImage()
+            case "enclosure", "media:content":
+                self.lastParseMode = self.parseMode
+                self.parseMode = ParseMode.IMAGE
+                self.tmpImage = NewsImage()
+                self.tmpImage?.url = attributeDict["url"] as! String
             default:
                 println("Element's name is \(elementName)")
                 println("Element's attributes are \(attributeDict)")
@@ -118,13 +135,13 @@ public class FeedParser: NSObject, NSXMLParserDelegate {
                 // Element is not needed for parsing
                 break
             default:
-                println("Element's name is \(elementName)")
-                println("Element's attributes are \(attributeDict)")
+                println("RSS Element's name is \(elementName)")
+                println("RSS Element's attributes are \(attributeDict)")
             }
         }
     }
     
-    public func parser(parser: NSXMLParser!, didEndElement elementName: String!, namespaceURI: String!, qualifiedName qName:String!) {
+    public func parser(parser: NSXMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName:String?) {
         
         switch self.newsFeed.feedType {
         case FeedType.ATOM:
@@ -136,6 +153,7 @@ public class FeedParser: NSObject, NSXMLParserDelegate {
                     case ParseMode.ENTRY:
                         self.tmpEntry.title = self.currentContent
                     case ParseMode.IMAGE:
+                        self.tmpImage?.title = self.currentContent
                         break
                     }
                 case "updated":
@@ -190,11 +208,18 @@ public class FeedParser: NSObject, NSXMLParserDelegate {
                     case ParseMode.IMAGE:
                         break
                     }
-                case "link", "feed", "author", "name":
+                case "image", "enclosure", "media:content":
+                    self.parseMode = self.lastParseMode!
+                    if (self.parseMode == ParseMode.FEED) {
+                        self.newsFeed.images.append(self.tmpImage!)
+                    } else if (self.parseMode == ParseMode.ENTRY) {
+                        self.tmpEntry.images.append(self.tmpImage!)
+                    }
+                    case "link", "feed", "author", "name":
                     // Content not used, value is stored in attribute
                     break
                 default:
-                    println("UNKNOWN END Element \(elementName)")
+                    println("UNKNOWN END ATOM Element \(elementName)")
             }
         case FeedType.RSS:
             switch elementName {
@@ -265,7 +290,7 @@ public class FeedParser: NSObject, NSXMLParserDelegate {
                 case ParseMode.IMAGE:
                     break
                 }
-            case "image":
+            case "image", "enclosure", "media:content":
                 self.parseMode = self.lastParseMode!
                 if (self.parseMode == ParseMode.FEED) {
                     self.newsFeed.images.append(self.tmpImage!)
@@ -290,23 +315,23 @@ public class FeedParser: NSObject, NSXMLParserDelegate {
                 // Content not used, value is stored in attribute
                 break
             default:
-                println("UNKNOWN END Element \(elementName)")
+                println("UNKNOWN END RSS Element \(elementName)")
             }
         default:
             println("UNKNOWN feedType \(self.newsFeed.feedType)")
         }
     }
     
-    public func parser(parser: NSXMLParser!, foundCharacters string: String!) {
-            self.currentContent += string
+    public func parser(parser: NSXMLParser, foundCharacters string: String?) {
+            self.currentContent += string!
     }
     
-    public func parser(parser: NSXMLParser!, parseErrorOccurred parseError: NSError!) {
+    public func parser(parser: NSXMLParser, parseErrorOccurred parseError: NSError) {
         println("Error: \(parseError.description)")
         self.delegate?.anErrorOccured(self, error: parseError)
     }
     
-    public func parserDidEndDocument(parser: NSXMLParser!) {
+    public func parserDidEndDocument(parser: NSXMLParser) {
         self.delegate?.didFinishFeedParsing(self, newsFeed: self.newsFeed)
     }
     

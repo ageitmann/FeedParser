@@ -34,16 +34,6 @@ class FeedParserTests: XCTestCase {
         super.tearDown()
     }
     
-    func testAtomFeedParsing() {
-        let urlString = "http://localhost/~andreas/atom.xml"
-    
-        var feedParserDelegate = TestAtomFeedParserDelegate()
-        var feedParser = FeedParser()
-     
-        feedParser.delegate = feedParserDelegate
-        feedParser.parseFeedFromUrl(urlString)
-    }
-
     func testAtomFeedParsingFromFile() {
         let urlString = "./atom.xml"
         
@@ -54,8 +44,8 @@ class FeedParserTests: XCTestCase {
         feedParser.parseFeedFromUrl(urlString)
     }
 
-    func testSimpleRssFeedParsing() {
-        let urlString = "http://localhost/~andreas/sample-feed.xml.rss"
+    func testSimpleRssFeedParsingFromFile() {
+        let urlString = "./sample-feed.xml.rss"
         
         var feedParserDelegate = TestSimpleRSSFeedParserDelegate()
         var feedParser = FeedParser()
@@ -64,8 +54,8 @@ class FeedParserTests: XCTestCase {
         feedParser.parseFeedFromUrl(urlString)
     }
 
-    func testSimpleRssFeedParsingFromFile() {
-        let urlString = "./sample-feed.xml.rss"
+    func testSampleRssFeedParsingFromFile() {
+        let urlString = "./sample.xml.rss"
         
         var feedParserDelegate = TestSimpleRSSFeedParserDelegate()
         var feedParser = FeedParser()
